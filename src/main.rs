@@ -7,11 +7,12 @@ use ratatui::widgets::{Block, Borders};
 use ratatui::{DefaultTerminal, Frame};
 
 mod tetromino;
+mod game;
+mod draw;
 
-const CELL_W: u16 = 2;
-const CELL_H: u16 = 1;
-const BOARD_H: usize = 20;
-const BOARD_W: usize = 10;
+use crate::game::{Game, BOARD_H, BOARD_W};
+use crate::draw::CELL_W;
+
 const ACTUAL_BOARD_H: u16 = BOARD_H as u16 + 2;
 const ACTUAL_BOARD_W: u16 = BOARD_W as u16 * CELL_W + 2;
 
@@ -25,9 +26,10 @@ fn main() -> io::Result<()> {
 fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
     let delta_time = Duration::from_millis(16);
     let mut last_time = Instant::now();
+    let mut game = Game::new();
 
     loop {
-        terminal.draw(ui_draw)?;
+        terminal.draw(|frame| ui_draw(frame, &game))?;
 
         let timeout = delta_time.saturating_sub(last_time.elapsed());
 
@@ -47,7 +49,7 @@ fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
     }
 }
 
-fn ui_draw(frame: &mut Frame) {
+fn ui_draw(frame: &mut Frame, game: &Game) {
     let area = frame.area();
 
     let [vertical] = Layout::vertical([
@@ -63,7 +65,16 @@ fn ui_draw(frame: &mut Frame) {
     let board_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Green));
+    let board_inner = board_block.inner(board_area);
     frame.render_widget(board_block, board_area);
+
+    for (y, cells) in game.board.iter().enumerate() {
+        for (x, cell) in cells.iter().enumerate() {
+            if let Some(color) = cell {
+                draw::draw_cell(frame, board_inner, x as i32, y as i32, *color);
+            }
+        }
+    }
 
     let [next_area, _, score_area] = Layout::vertical([
         Constraint::Length(6),

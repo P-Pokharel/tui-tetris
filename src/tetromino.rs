@@ -6,6 +6,8 @@ pub type Shape = [[u8; 4]; 4];
 pub enum Kind {T, L, J, O, I, Z, S}
 
 impl Kind {
+    pub const ALL: [Kind; 7] = [Kind::T, Kind::L, Kind::J, Kind::O, Kind::I, Kind::Z, Kind::S];
+
     fn shape(self) -> Shape {
         match self {
             Kind::T => [
