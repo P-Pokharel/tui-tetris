@@ -1,10 +1,19 @@
 use std::io;
 use std::time::{Instant, Duration};
 use crossterm::event::{self, KeyCode, KeyEventKind};
-use ratatui::layout::{Constraint, Layout};
+use ratatui::layout::{Constraint, Flex, Layout};
 use ratatui::style::{Style, Color};
 use ratatui::widgets::{Block, Borders};
 use ratatui::{DefaultTerminal, Frame};
+
+mod tetromino;
+
+const CELL_W: u16 = 2;
+const CELL_H: u16 = 1;
+const BOARD_H: usize = 20;
+const BOARD_W: usize = 10;
+const ACTUAL_BOARD_H: u16 = BOARD_H as u16 + 2;
+const ACTUAL_BOARD_W: u16 = BOARD_W as u16 * CELL_W + 2;
 
 fn main() -> io::Result<()> {
     let mut terminal = ratatui::init();
@@ -41,51 +50,35 @@ fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
 fn ui_draw(frame: &mut Frame) {
     let area = frame.area();
 
-    let vertical = Layout::vertical([
-        Constraint::Percentage(5),
-        Constraint::Percentage(90),
-        Constraint::Percentage(5),
-    ])
-    .split(area);
+    let [vertical] = Layout::vertical([
+        Constraint::Length(ACTUAL_BOARD_H)
+    ]).flex(Flex::Center).areas(area);
 
-    let horizontal = Layout::horizontal([
-        Constraint::Percentage(25),
-        Constraint::Percentage(50),
-        Constraint::Percentage(25),
-    ])
-    .split(vertical[1]);
-
-    let content = horizontal[1];
-
-    let main = Layout::horizontal([
-        Constraint::Fill(1),
+    let [board_area, _, side_area] = Layout::horizontal([
+        Constraint::Length(ACTUAL_BOARD_W),
         Constraint::Length(2),
-        Constraint::Length(16),
-    ])
-    .split(content);
+        Constraint::Length(16)
+    ]).flex(Flex::Center).areas(vertical);
 
     let board_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Green));
-    frame.render_widget(board_block, main[0]);
+    frame.render_widget(board_block, board_area);
 
-    let side = Layout::vertical([
-        Constraint::Length(7),
+    let [next_area, _, score_area] = Layout::vertical([
+        Constraint::Length(6),
         Constraint::Length(1),
         Constraint::Length(4),
-        Constraint::Fill(1),
     ])
-    .split(main[2]);
+    .areas(side_area);
 
     let next_block = Block::default()
         .borders(Borders::ALL)
-        .title("NEXT")
         .border_style(Style::default().fg(Color::Blue));
-    frame.render_widget(next_block, side[0]);
+    frame.render_widget(next_block, next_area);
 
     let score_block = Block::default()
         .borders(Borders::ALL)
-        .title("SCORE")
         .border_style(Style::default().fg(Color::Red));
-    frame.render_widget(score_block, side[2]);
+    frame.render_widget(score_block, score_area);
 }
