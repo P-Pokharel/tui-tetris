@@ -34,8 +34,13 @@ fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
         if event::poll(delta_time)? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
-                    if let KeyCode::Char('q') = key.code {
-                        return Ok(());
+                    match key.code {
+                        KeyCode::Char('q') | KeyCode::Esc => { return Ok(()) },
+                        KeyCode::Left => { game.move_piece(-1, 0); },
+                        KeyCode::Right => { game.move_piece(1, 0); },
+                        KeyCode::Down => { game.drop_one(); },
+                        KeyCode::Up => { game.rotate(); }
+                        _ => {}
                     }
                 }
             }

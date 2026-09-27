@@ -46,7 +46,7 @@ impl Game {
         Kind::ALL[(self.rng % Kind::ALL.len() as u64) as usize]
     }
 
-    fn drop_down(&mut self, dx: i32, dy: i32) -> bool {
+    pub fn move_piece(&mut self, dx: i32, dy: i32) -> bool {
         let mut moved = self.current;
         moved.x += dx;
         moved.y += dy;
@@ -58,13 +58,33 @@ impl Game {
         }
     }
 
+    pub fn drop_one(&mut self) {
+        let dropped = self.move_piece(0, 1);
+        if !dropped {
+            self.lock_piece();
+        }
+    }
+
+    pub fn rotate(&mut self) {
+        let mut rotated = self.current;
+        rotated.rotate_shape();
+        for move_about in [0, -1, 1, -2, 2] {
+            let mut candidate = rotated;
+            candidate.x += move_about;
+            if self.fits(&candidate) {
+                self.current = candidate;
+                return;
+            }
+        }
+    }
+
     pub fn update(&mut self) {
         if self.game_over {
             return;
         }
         if self.last_fall.elapsed() >= self.fall_interval() {
             self.last_fall = Instant::now();
-            let dropped = self.drop_down(0, 1);
+            let dropped = self.move_piece(0, 1);
             if !dropped {
                 self.lock_piece();
             }
