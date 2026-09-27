@@ -11,7 +11,8 @@ mod game;
 mod draw;
 
 use crate::game::{Game, BOARD_H, BOARD_W};
-use crate::draw::CELL_W;
+use crate::draw::{CELL_W, draw_shape};
+use crate::tetromino::Piece;
 
 const ACTUAL_BOARD_H: u16 = BOARD_H as u16 + 2;
 const ACTUAL_BOARD_W: u16 = BOARD_W as u16 * CELL_W + 2;
@@ -75,6 +76,8 @@ fn ui_draw(frame: &mut Frame, game: &Game) {
             }
         }
     }
+    let piece = &game.current;
+    draw::draw_shape(frame, board_inner, &piece.cells, piece.kind.color(), piece.x, piece.y);
 
     let [next_area, _, score_area] = Layout::vertical([
         Constraint::Length(6),
@@ -86,7 +89,11 @@ fn ui_draw(frame: &mut Frame, game: &Game) {
     let next_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Blue));
+    let next_inner = next_block.inner(next_area);
     frame.render_widget(next_block, next_area);
+
+    let next = Piece::spawn(game.next);
+    draw_shape(frame, next_inner, &next.cells, next.kind.color(), 2, 1);
 
     let score_block = Block::default()
         .borders(Borders::ALL)
