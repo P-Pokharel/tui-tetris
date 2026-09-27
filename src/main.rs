@@ -3,7 +3,7 @@ use std::time::Duration;
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use ratatui::layout::{Constraint, Flex, Layout};
 use ratatui::style::{Style, Color};
-use ratatui::widgets::{Block, Borders};
+use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::{DefaultTerminal, Frame};
 
 mod tetromino;
@@ -98,5 +98,6 @@ fn ui_draw(frame: &mut Frame, game: &Game) {
     let score_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Red));
-    frame.render_widget(score_block, score_area);
+    let score_text = format!("{}\nLines: {}", game.score, game.lines);
+    frame.render_widget(Paragraph::new(score_text).block(score_block), score_area);
 }
