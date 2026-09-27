@@ -79,6 +79,7 @@ fn rotate(s: &Shape) -> Shape {
     out
 }
 
+#[derive(Clone, Copy)]
 pub struct Piece {
     pub kind: Kind,
     pub cells: Shape,
@@ -90,7 +91,19 @@ impl Piece {
     pub fn spawn(kind: Kind) -> Self {
         Self {kind, cells: kind.shape(), x: 3, y: 0}
     }
+
     pub fn rotate_shape(&mut self) {
         self.cells = rotate(&self.cells);
+    }
+
+    /// Generated via Claude
+    /// Board coordinates (x, y) of every filled cell of this piece.
+    pub fn blocks(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+        self.cells.iter().enumerate().flat_map(move |(r, row)| {
+            row.iter()
+                .enumerate()
+                .filter(|(_, v)| **v != 0)
+                .map(move |(c, _)| (self.x + c as i32, self.y + r as i32))
+        })
     }
 }

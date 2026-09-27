@@ -1,5 +1,5 @@
 use std::io;
-use std::time::{Instant, Duration};
+use std::time::Duration;
 use crossterm::event::{self, KeyCode, KeyEventKind};
 use ratatui::layout::{Constraint, Flex, Layout};
 use ratatui::style::{Style, Color};
@@ -26,15 +26,12 @@ fn main() -> io::Result<()> {
 
 fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
     let delta_time = Duration::from_millis(16);
-    let mut last_time = Instant::now();
     let mut game = Game::new();
 
     loop {
         terminal.draw(|frame| ui_draw(frame, &game))?;
 
-        let timeout = delta_time.saturating_sub(last_time.elapsed());
-
-        if event::poll(timeout)? {
+        if event::poll(delta_time)? {
             if let event::Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
                     if let KeyCode::Char('q') = key.code {
@@ -44,9 +41,7 @@ fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
             }
         }
 
-        if last_time.elapsed() >= delta_time {
-            last_time = Instant::now();
-        }
+        game.update();
     }
 }
 
