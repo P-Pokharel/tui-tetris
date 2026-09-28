@@ -36,6 +36,7 @@ fn run_game(terminal: &mut DefaultTerminal) -> io::Result<()> {
                 if key.kind == KeyEventKind::Press {
                     match key.code {
                         KeyCode::Char('q') | KeyCode::Esc => { return Ok(()) },
+                        KeyCode::Char('r') => if game.game_over { game = Game::new() },
                         KeyCode::Left => { game.move_piece(-1, 0); },
                         KeyCode::Right => { game.move_piece(1, 0); },
                         KeyCode::Down => { game.drop_one(); },
@@ -100,4 +101,8 @@ fn ui_draw(frame: &mut Frame, game: &Game) {
         .border_style(Style::default().fg(Color::Red));
     let score_text = format!("{}\nLines: {}", game.score, game.lines);
     frame.render_widget(Paragraph::new(score_text).block(score_block), score_area);
+
+    if game.game_over {
+        draw::draw_game_over(frame, board_inner, game);
+    }
 }

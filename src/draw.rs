@@ -1,8 +1,9 @@
 use ratatui::Frame;
-use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
-use ratatui::widgets::Block;
+use ratatui::layout::{Alignment, Constraint, Flex, Layout, Rect};
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::widgets::{Block, Clear, Paragraph};
 
+use crate::game::Game;
 use crate::tetromino::Shape;
 
 pub const CELL_W: u16 = 2;
@@ -42,4 +43,23 @@ pub fn draw_shape(
             draw_cell(frame, area, c as i32 + px, r as i32 + py, color);
         }
     }
+}
+
+pub fn draw_game_over(frame: &mut Frame, board: Rect, game: &Game) {
+    for (y, cells) in game.board.iter().enumerate() {
+        for (x, _) in cells.iter().enumerate() {
+            draw_cell(frame, board, x as i32, y as i32, Color::Reset);
+        }
+    }
+    let [gameover_popup] = Layout::vertical([
+        Constraint::Length(4)
+    ]).flex(Flex::Center).areas(board);
+
+    frame.render_widget(Clear, gameover_popup);
+    frame.render_widget(
+        Paragraph::new("GAME OVER\n\nr: restart\nq: quit")
+            .alignment(Alignment::Center)
+            .style(Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+        gameover_popup,
+    );
 }
